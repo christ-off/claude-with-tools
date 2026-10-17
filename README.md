@@ -16,7 +16,14 @@ sbx login                      # Docker account
 sbx secret set anthropic       # Anthropic API key, kept on the host
 ```
 
-Put the kit in a fixed place, e.g. `~/sbx-kits/claude-with-tools`.
+Clone the kit to a fixed place:
+
+```bash
+git clone https://github.com/christ-off/claude-with-tools ~/sbx-kits/claude-with-tools
+```
+
+Update later with `git -C ~/sbx-kits/claude-with-tools pull`, then recreate sandboxes
+that should pick up the change.
 
 ## Start a new sandbox
 
