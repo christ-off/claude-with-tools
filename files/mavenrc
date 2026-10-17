@@ -1,0 +1,16 @@
+# Sourced by mvn/mvnw. Maven ignores HTTPS_PROXY: build a global settings.xml from it.
+_px="${HTTPS_PROXY:-${https_proxy:-}}"
+if [ -n "$_px" ]; then
+  _p="${_px#*://}"; _p="${_p%%/*}"; _p="${_p##*@}"
+  _h="${_p%:*}"; _o="${_p##*:}"; [ "$_o" = "$_h" ] && _o=3128
+  _gs="${TMPDIR:-/tmp}/sbx-maven-settings.$(id -u).xml"
+  cat > "$_gs" <<EOF
+<settings><proxies><proxy>
+  <id>sbx</id><active>true</active><protocol>http</protocol>
+  <host>${_h}</host><port>${_o}</port>
+  <nonProxyHosts>localhost|127.0.0.1|::1</nonProxyHosts>
+</proxy></proxies></settings>
+EOF
+  case " ${MAVEN_ARGS:-} " in *" -gs "*) ;; *) export MAVEN_ARGS="${MAVEN_ARGS:-} -gs $_gs" ;; esac
+fi
+unset _px _p _h _o _gs

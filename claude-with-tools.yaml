@@ -1,0 +1,85 @@
+# syntax=docker/sandbox-kit:3
+schemaVersion: "3"
+kind: workload
+displayName: Claude Code — Java/Maven/Ruby/Playwright
+description: Claude Code with Java 25, Maven, Ruby, RTK and Playwright CLI
+
+args:
+  # Unpinned: image gets "stable" at build; each sandbox then self-updates (auto-updater on).
+  # Set an explicit version (e.g. "2.1.300") only to hold or roll back a release.
+  claude:
+    default: "stable"
+    pattern: '^(stable|latest|[0-9]+\.[0-9]+\.[0-9]+)$'
+    buildArg: CLAUDE_VERSION
+  maven:
+    default: "3.9.11"
+    pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
+    buildArg: MAVEN_VERSION
+
+provides: ["claude@${{ kit.args.claude }}"]
+
+capabilities:
+  - type: com.docker.sandbox/sbx@1
+
+  # Docker Engine + JVM builds: give it room (override with --cpus / --memory)
+  - type: com.docker.sandbox/resources@1
+    config:
+      cpu: 4
+      memory: 8g
+
+  - type: com.docker.sandbox/network-policy@1
+    config:
+      runtime:
+        allow:
+          - api.anthropic.com:443
+          - claude.ai:443
+          - downloads.claude.ai:443
+          - repo.maven.apache.org:443
+          - repo1.maven.org:443
+          - rubygems.org:443
+          - index.rubygems.org:443
+          - registry.npmjs.org:443
+          - cdn.playwright.dev:443
+          - playwright.download.prss.microsoft.com:443
+          - github.com:443
+          - api.github.com:443
+          - codeload.github.com:443
+          - objects.githubusercontent.com:443
+          - raw.githubusercontent.com:443
+          # Docker Hub (Testcontainers, docker pull/build inside the sandbox)
+          - registry-1.docker.io:443
+          - auth.docker.io:443
+          - production.cloudflare.docker.com:443
+
+  - type: com.docker.sandbox/credential@1
+    description: Anthropic API access
+    config:
+      service: anthropic
+      phase: runtime
+      apiKey:
+        name: ANTHROPIC_API_KEY
+        proxyManaged: true
+        inject:
+          - domain: api.anthropic.com
+            header: x-api-key
+            format: "%s"
+
+  - type: com.docker.sandbox/lifecycle@1
+    config:
+      install:
+        # At create, after sbx seeds ~/.claude (image-time edits get overwritten)
+        - command: "rtk init -g --auto-patch </dev/null && rtk init --show"
+          user: "1000"
+          env: [RTK_TELEMETRY_DISABLED]
+          description: Register RTK hook for Claude Code
+      files:
+        - path: /home/agent/.config/rtk/config.toml
+          overwrite: false
+          content: |
+            [hooks]
+            exclude_commands = ["curl", "playwright", "playwright-cli"]
+
+  - type: com.docker.sandbox/agent-context@1
+    config:
+      filename: CLAUDE.md
+      contentFile: ./context.md
