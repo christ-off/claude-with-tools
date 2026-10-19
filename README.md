@@ -45,26 +45,6 @@ First run:
 2. Approve the kit's request to use the `anthropic` secret.
 3. RTK registers its Claude hook, then Claude Code starts in the project.
 
-Variants:
-
-```bash
-# Work on a separate git clone (host repo untouched until you fetch/push)
-sbx run --clone --name <project> ~/sbx-kits/claude-with-tools ~/code/<project>
-
-# Create without attaching, attach later
-sbx create --name <project> ~/sbx-kits/claude-with-tools ~/code/<project>
-sbx run --name <project>
-
-# More resources than the default 4 CPU / 8 GB
-sbx run --name <project> --cpus 8 --memory 16g ~/sbx-kits/claude-with-tools ~/code/<project>
-```
-
-Optional shortcut in `~/.bashrc` / `~/.zshrc`:
-
-```bash
-cwt() { sbx run --name "$(basename "$1")" ~/sbx-kits/claude-with-tools "$1"; }
-# cwt ~/code/my-api
-```
 
 ## Check a new sandbox
 
