@@ -13,8 +13,12 @@ One kit, reused for every project: each project gets its own sandbox.
 
 ```bash
 sbx login                      # Docker account
-sbx secret set anthropic       # Anthropic API key, kept on the host
+sbx secret set anthropic       # console API key or Claude login; check with `sbx secret ls`
 ```
+
+The credential stays on the host: the sandbox only holds a `proxy-managed`
+placeholder and the sandbox proxy injects the real token on calls to Anthropic.
+No `/login` is needed inside the sandbox (and don't set `ANTHROPIC_API_KEY` there).
 
 Clone the kit to a fixed place:
 
@@ -66,6 +70,9 @@ cwt() { sbx run --name "$(basename "$1")" ~/sbx-kits/claude-with-tools "$1"; }
 
 ```bash
 sbx exec <project> bash -c 'java -version && mvn -v && ruby -v && docker info --format "{{.ServerVersion}}" && rtk init --show && playwright-cli --help >/dev/null && echo OK'
+
+# credential is proxied: prints sk-ant-oat01-proxy-managed (OAuth) and no warning in Claude Code
+sbx exec <project> bash -c "jq -r '.claudeAiOauth.accessToken' ~/.claude/.credentials.json"
 ```
 
 ## Day-to-day
@@ -97,8 +104,9 @@ or add the host to `claude-with-tools.yaml` (applies to sandboxes created afterw
 
 - **Claude Code**: unpinned; each sandbox auto-updates. Force: `sbx exec <project> claude update`.
   To hold a release, set `args.claude.default` to a version and recreate the sandbox.
-- **Kit changes** (tools, versions, allowlist): edit the kit, then recreate:
-  `sbx rm <project> && sbx run --name <project> ~/sbx-kits/claude-with-tools ~/code/<project>`.
+- **Kit changes** (tools, versions, allowlist, credentials): edit the kit, then `sbx rm <project>`
+  and start it again as above. Credentials are resolved at create, so a changed
+  `anthropic` secret also needs a recreate.
 
 ## Files
 
