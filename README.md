@@ -29,6 +29,21 @@ git clone https://github.com/christ-off/claude-with-tools ~/sbx-kits/claude-with
 Update later with `git -C ~/sbx-kits/claude-with-tools pull`, then recreate sandboxes
 that should pick up the change.
 
+## Drawbacks
+
+The sandbox runs Linux, while your host may be macOS. Native npm modules install a
+binary per OS and CPU, so a `node_modules` installed on the host can fail inside the
+sandbox.
+
+Example: Vitest depends on rolldown, which ships a separate native binary per platform.
+A `node_modules` installed on an Apple Silicon Mac only contains
+`@rolldown/binding-darwin-arm64`, but the Linux aarch64 sandbox needs
+`@rolldown/binding-linux-arm64-gnu`.
+
+Fix: run `npm install` inside the sandbox (or delete `node_modules` first) so the
+Linux binaries are installed. Note this overwrites the host's `node_modules`, so you
+may need to reinstall on the host afterwards.
+
 ## Start a new sandbox
 
 ```bash
