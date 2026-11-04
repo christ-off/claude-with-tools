@@ -6,6 +6,7 @@ Docker Sandbox (v3 kit) running Claude Code with:
 - Docker Engine (Testcontainers, `docker build`)
 - RTK (auto-rewrites Bash commands for compact output)
 - Playwright CLI + headless Chromium
+- Context7 MCP server, through the sandbox MCP gateway (registered on the host, see below)
 
 One kit, reused for every project: each project gets its own sandbox.
 
@@ -19,6 +20,30 @@ sbx secret set anthropic       # console API key or Claude login; check with `sb
 The credential stays on the host: the sandbox only holds a `proxy-managed`
 placeholder and the sandbox proxy injects the real token on calls to Anthropic.
 No `/login` is needed inside the sandbox (and don't set `ANTHROPIC_API_KEY` there).
+
+Register Context7 once on the host. The sandbox MCP gateway exposes it to Claude;
+MCP servers are host-side state, not part of the kit:
+
+```bash
+sbx mcp add context7 --url https://mcp.context7.com/mcp
+sbx mcp ls
+```
+
+Optional API key (higher rate limits), kept on the host and injected by the gateway:
+
+```bash
+sbx mcp rm context7
+sbx mcp add context7 --url https://mcp.context7.com/mcp \
+  --header 'CONTEXT7_API_KEY: ${api-key}'
+sbx secret set mcp:context7:api-key
+```
+
+Attach it to each sandbox once (persists across restarts, and other servers can be
+loaded the same way):
+
+```bash
+sbx mcp load context7 --sandbox <project>
+```
 
 Clone the kit to a fixed place:
 
