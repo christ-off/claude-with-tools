@@ -52,6 +52,7 @@ capabilities:
           - registry-1.docker.io:443
           - auth.docker.io:443
           - production.cloudflare.docker.com:443
+          - sonarcloud.io:443
 
   # Mirrors the stock docker/sbx-kit-claude declaration: the host `anthropic`
   # secret may be a console API key or a claude.ai OAuth login (proxy-managed).
