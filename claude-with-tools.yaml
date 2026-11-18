@@ -2,7 +2,7 @@
 schemaVersion: "3"
 kind: workload
 displayName: Claude Code — Java/Maven/Ruby/Playwright
-description: Claude Code with Java 25, Maven, Ruby, RTK and Playwright CLI
+description: Claude Code with Java 25, Maven, Ruby and Playwright CLI
 
 args:
   # Unpinned: image gets "stable" at build; each sandbox then self-updates (auto-updater on).
@@ -12,7 +12,7 @@ args:
     pattern: '^(stable|latest|[0-9]+\.[0-9]+\.[0-9]+)$'
     buildArg: CLAUDE_VERSION
   maven:
-    default: "3.9.11"
+    default: "3.9.16"
     pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'
     buildArg: MAVEN_VERSION
 
@@ -86,21 +86,6 @@ capabilities:
               refreshToken: "{{.RefreshToken}}"
               scopes: "{{.Scopes}}"
             primaryApiKey: "{{.PrimaryApiKey}}"
-
-  - type: com.docker.sandbox/lifecycle@1
-    config:
-      install:
-        # At create, after sbx seeds ~/.claude (image-time edits get overwritten)
-        - command: "rtk init -g --auto-patch </dev/null && rtk init --show"
-          user: "1000"
-          env: [RTK_TELEMETRY_DISABLED]
-          description: Register RTK hook for Claude Code
-      files:
-        - path: /home/agent/.config/rtk/config.toml
-          overwrite: false
-          content: |
-            [hooks]
-            exclude_commands = ["curl", "playwright", "playwright-cli"]
 
   - type: com.docker.sandbox/agent-context@1
     config:

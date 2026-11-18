@@ -4,7 +4,6 @@ Docker Sandbox (v3 kit) running Claude Code with:
 
 - Java 25, Maven, Ruby/Bundler
 - Docker Engine (Testcontainers, `docker build`)
-- RTK (auto-rewrites Bash commands for compact output)
 - Playwright CLI + headless Chromium
 - Context7 MCP server, through the sandbox MCP gateway (registered on the host, see below)
 
@@ -83,13 +82,13 @@ First run:
 
 1. `sbx` builds the kit image (several minutes; later runs reuse the build).
 2. Approve the kit's request to use the `anthropic` secret.
-3. RTK registers its Claude hook, then Claude Code starts in the project.
+3. Claude Code starts in the project.
 
 
 ## Check a new sandbox
 
 ```bash
-sbx exec <project> bash -c 'java -version && mvn -v && ruby -v && docker info --format "{{.ServerVersion}}" && rtk init --show && playwright-cli --help >/dev/null && echo OK'
+sbx exec <project> bash -c 'java -version && mvn -v && ruby -v && docker info --format "{{.ServerVersion}}" && playwright-cli --help >/dev/null && echo OK'
 
 # credential is proxied: prints sk-ant-oat01-proxy-managed (OAuth) and no warning in Claude Code
 sbx exec <project> bash -c "jq -r '.claudeAiOauth.accessToken' ~/.claude/.credentials.json"
@@ -133,6 +132,6 @@ or add the host to `claude-with-tools.yaml` (applies to sandboxes created afterw
 | File | Purpose |
 |---|---|
 | `claude-with-tools.dockerfile` | Image: base `claude-code-docker` + tools |
-| `claude-with-tools.yaml` | Kit descriptor: args, network, credential, RTK hook |
+| `claude-with-tools.yaml` | Kit descriptor: args, network, credential |
 | `context.md` | Instructions given to Claude (CLAUDE.md) |
 | `files/mavenrc` | Routes Maven through the sandbox proxy |

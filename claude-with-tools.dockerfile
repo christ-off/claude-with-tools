@@ -1,10 +1,9 @@
 # syntax=docker/dockerfile:1.7
-# Claude Code + Java 25, Maven, Ruby, RTK, Playwright CLI (Chromium)
+# Claude Code + Java 25, Maven, Ruby, Playwright CLI (Chromium)
 FROM docker/sandbox-templates:claude-code-docker
 
-ARG TARGETARCH
 ARG JAVA_MAJOR=25
-ARG MAVEN_VERSION=3.9.11
+ARG MAVEN_VERSION=3.9.16
 ARG PLAYWRIGHT_BROWSERS="chromium"
 
 USER root
@@ -28,21 +27,11 @@ RUN url="https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries
  && ln -sf /opt/maven/bin/mvn /usr/local/bin/mvn && rm -f /tmp/m.*
 COPY files/mavenrc /etc/mavenrc
 
-# RTK binary (hook is registered at sandbox creation, see claude-with-tools.yaml)
-RUN case "$TARGETARCH" in \
-      amd64) t=x86_64-unknown-linux-musl ;; arm64) t=aarch64-unknown-linux-gnu ;; \
-      *) echo "unsupported arch $TARGETARCH" >&2; exit 1 ;; esac \
- && mkdir /tmp/rtk \
- && curl -fsSL "https://github.com/rtk-ai/rtk/releases/latest/download/rtk-$t.tar.gz" | tar -xz -C /tmp/rtk \
- && install -m 0755 "$(find /tmp/rtk -type f -name rtk | head -n1)" /usr/local/bin/rtk \
- && rm -rf /tmp/rtk
-
 ENV JAVA_HOME=/usr/lib/jvm/java-current \
     MAVEN_HOME=/opt/maven \
     NPM_CONFIG_PREFIX=/usr/local/share/npm-global \
     GEM_HOME=/home/agent/.local/share/gem \
     PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright \
-    RTK_TELEMETRY_DISABLED=1 \
     IS_SANDBOX=1
 ENV PATH=$JAVA_HOME/bin:$MAVEN_HOME/bin:$GEM_HOME/bin:$NPM_CONFIG_PREFIX/bin:/home/agent/.local/bin:$PATH
 
@@ -66,6 +55,6 @@ RUN curl -fsSL https://claude.ai/install.sh | bash -s -- "$CLAUDE_VERSION" \
 
 # Smoke test + launch
 WORKDIR /home/agent/workspace
-RUN docker --version && java -version && mvn -v && ruby -v && rtk --version && playwright-cli --help >/dev/null
+RUN docker --version && java -version && mvn -v && ruby -v && playwright-cli --help >/dev/null
 ENTRYPOINT ["claude", "--dangerously-skip-permissions"]
 CMD []
